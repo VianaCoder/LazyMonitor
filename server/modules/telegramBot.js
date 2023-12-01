@@ -14,11 +14,11 @@ module.exports = {
     
             axios.get(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, { params: { 'chat_id': CHAT_ID, 'text': message, 'parse_mode': 'HTML'}})
                 .then(function(response) {
-                    resolve("Sucess")
+                    resolve("Success")
                 })
                 .catch(function(error) {
                     console.log(error)
-                    resolve("Erro ao enviar mensagem")
+                    resolve("ERROR - Problem to send telegram notification")
                 })
         })
     }

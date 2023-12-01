@@ -26,18 +26,33 @@ async function connectDB() {
     return client;
 }
 
-async function setupDatabase(){
+async function checkTable(){
 
     let query = `SELECT COUNT(*) FROM pg_catalog.pg_tables WHERE tablename = 'servers';`
+    let checkTable
 
-    const checkTable = await connection.query(query)
+    try{
+        checkTable = await connection.query(query)
+        checkTable = checkTable.rows[0].count
+    }
+    catch(error){
+        console.log(`ERROR - ${error}`)
+    }
 
-    if (checkTable.rows === 0) {
+    return checkTable
+}
+
+async function setupDatabase(){
+
+    let checkTableResult = await checkTable()
+    console.log(checkTableResult)
+
+    if (checkTableResult == 0) {
         query = `CREATE TABLE servers (
             id serial NOT NULL PRIMARY KEY,
             name text COLLATE pg_catalog."default" NOT NULL,
             hostname text COLLATE pg_catalog."default" NOT NULL,
-            monitoring_url text COLLATE pg_catalog."default" NOT NULL,
+            monitoring_uri text COLLATE pg_catalog."default" NOT NULL,
             monitoring_ping boolean NOT NULL,
             monitoring_http boolean NOT NULL,
             healthstatus_ping boolean,
@@ -45,8 +60,14 @@ async function setupDatabase(){
             healthstatus_https boolean
           );`
     
-        const returnDB = await connection.query(query)
         console.log("Creating tables")
+        
+        try{
+            await connection.query(query)
+        }
+        catch(error){
+            console.log(`ERROR - ${error}`)
+        }
     }
 
     return

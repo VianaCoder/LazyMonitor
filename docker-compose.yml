@@ -1,0 +1,23 @@
+services: 
+  lazymonitor:
+    build: .
+    env_file: ./.env
+    ports:
+      - 3001:3001
+    volumes:
+      - ./server:/lazymonitor/server
+      - ./package.json:/lazymonitor/package.json
+      - ./package-lock.json:/lazymonitor/package-lock.json
+    restart: always
+
+  database:
+    image: postgres:16.1-alpine
+    env_file: ./postgres.env
+    restart: always
+    volumes: 
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - 127.0.0.1:5432:5432
+
+volumes:
+  postgres-data:

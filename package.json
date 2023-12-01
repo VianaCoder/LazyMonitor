@@ -1,0 +1,22 @@
+{
+  "name": "lazymonitor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.2",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-ws": "^5.0.2",
+    "joi": "^17.11.0",
+    "pg": "^8.11.3",
+    "ping": "^0.4.4"
+  }
+}

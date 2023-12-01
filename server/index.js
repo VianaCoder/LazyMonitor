@@ -6,23 +6,28 @@ const { connectDB, setupDatabase } = require("./modules/dataConnector")
 const expressWs = require("express-ws");
 const monitoringHTTP = require("./services/monitoringHTTP")
 
-const PORT = process.env.PORT || 3001;
+async function main() {
+  const PORT = process.env.PORT || 3001;
 
-connectDB().then(setupDatabase);
+  await connectDB();
+  await setupDatabase()
+  
+  const app = express();
+  
+  // Adicionar o serviço HTTP e suas rotas ao App do Express
+  app.use(express.json());
+  app.use(routes);
+  
+  // Adicionar o serviço WebSocket e suas rotas ao App do Express
+  expressWs(app);
+  app.use(wsRoutes);
+  
+  app.listen(PORT, () => {
+    console.log(`Server listening on ${PORT}`);
+  });
+  
+  //Iniciando monitoramento
+  monitoringHTTP()
+}
 
-const app = express();
-
-// Adicionar o serviço HTTP e suas rotas ao App do Express
-app.use(express.json());
-app.use(routes);
-
-// Adicionar o serviço WebSocket e suas rotas ao App do Express
-expressWs(app);
-app.use(wsRoutes);
-
-app.listen(PORT, () => {
-  console.log(`Server listening on ${PORT}`);
-});
-
-//Iniciando monitoramento
-monitoringHTTP()
+main()

@@ -6,7 +6,7 @@ const validateHostnameAddress = (hostname) => {
     if (ipv4Pattern.test(hostname) || ipv6Pattern.test(hostname) || hostnamePattern.test(hostname)) {
       return true;
     } else {
-      throw new Error('Hostname inválido');
+      throw new Error('Hostname Invalited');
     }
   };
 

@@ -61,10 +61,10 @@ docker compose up
 ``` json
  {
  	"name": "Teste2",
- 	"hostname": "menherabot.xyz",
+ 	"hostname": "api.menherabot.xyz",
  	"monitoringPing": true,
  	"monitoringHTTP": true,
- 	"monitoringURI": "/ping"
+ 	"monitoringURI": "/info/ping"
  }
 ```
 
@@ -73,9 +73,9 @@ docker compose up
 |----------------|---------|-------------------------------|-----------------------------|
 |name|STRING|web aplication name            |YES            |
 |hostname |STRING |Domain or IP to acess your aplication    | YES          |
-|monitoringPing|Bollean|Permission to tests by ICMP    | YES          |
-|monitoringHTTP|Bollean|Permission to tests by HTTP    | YES          |
-|monitoringURI|Bollean|URL's Path to tests by HTTP    | YES          |
+|monitoringPing|BOOLEAN|Permission to tests by ICMP    | YES          |
+|monitoringHTTP|BOOLEAN|Permission to tests by HTTP    | YES          |
+|monitoringURI|BOOLEAN|URL's Path to tests by HTTP    | YES          |
 
 ### Update Server
 
@@ -86,10 +86,10 @@ docker compose up
 ``` json
  {
  	"name": "Teste2",
- 	"hostname": "menherabot.xyz",
+ 	"hostname": "api.menherabot.xyz",
  	"monitoringPing": true,
  	"monitoringHTTP": true,
- 	"monitoringURI": "/ping"
+ 	"monitoringURI": "/info/ping"
  }
 ```
 
@@ -97,9 +97,9 @@ docker compose up
 |----------------|---------|-------------------------------|-----------------------------|
 |name|STRING|web aplication name            |NO           |
 |hostname |STRING |Domain or IP to acess your aplication    | NO           |
-|monitoringPing|Bollean|Permission to tests by ICMP    | NO          |
-|monitoringHTTP|Bollean|Permission to tests by HTTP    | NO         |
-|monitoringURI|Bollean|URL's Path to tests by HTTP    | NO          |
+|monitoringPing|BOOLEAN|Permission to tests by ICMP    | NO          |
+|monitoringHTTP|BOOLEAN|Permission to tests by HTTP    | NO         |
+|monitoringURI|BOOLEAN|URL's Path to tests by HTTP    | NO          |
 
 ### DELETE Server
 

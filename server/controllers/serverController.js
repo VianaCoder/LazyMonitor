@@ -76,7 +76,7 @@ async createServer(request, response) {
         return response.json("ERROR - Was not possible insert server: " + error).status(500)
     }
 
-    response.status(201).json('Sucess') 
+    response.status(201).json('Success') 
 },
 
 async updateServer(request, response) { 
@@ -134,7 +134,7 @@ async updateServer(request, response) {
   
     try { 
       await clientDB.query(query);
-      response.status(201).json('Sucess');
+      response.status(201).json('Success');
     } catch (error) {
       console.log(error);
       response.status(500).json("ERROR - Was not possible update server: " + error);
@@ -158,7 +158,7 @@ async deleteServer(request, response) {
   
     try { 
       await clientDB.query(query);
-      response.status(200).json('Sucess');
+      response.status(200).json('Success');
     } catch (error) {
       console.log(error);
       response.status(500).json("ERROR - Was not possible delete server: " + error);

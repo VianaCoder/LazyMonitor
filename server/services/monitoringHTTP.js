@@ -38,20 +38,20 @@ async function monitoringHTTP() {
               }
             }
             catch(erro) {
-              console.log(`Problemas ao efetuar testes HTTP: ${erro}`)
+              console.log(`ERROR - Problems in HTTP Tests: ${erro}`)
             }
 
             console.log(statusTests)
     
-            if (statusTests.includes("Problem") & !statusTests.includes("Sucess") & server.lastState != `Offline` ){
+            if (statusTests.includes("Problem") & !statusTests.includes("Success") & server.lastState != `Offline` ){
                 server.lastState = `Offline`
                 telegramBot.sendMessage(server)
             }
-            else if (statusTests.includes("Sucess") & statusTests.includes("Problem") & server.lastState != `Depracated`) {
+            else if (statusTests.includes("Success") & statusTests.includes("Problem") & server.lastState != `Depracated`) {
                 server.lastState = `Depracated`
                 telegramBot.sendMessage(server)
             }
-            else if (statusTests.includes("Sucess") & !statusTests.includes("Problem") & !statusTests.includes("Blocked") & server.lastState != `Online`) {
+            else if (statusTests.includes("Success") & !statusTests.includes("Problem") & !statusTests.includes("Blocked") & server.lastState != `Online`) {
                 server.lastState = `Online`
                 telegramBot.sendMessage(server)
             }

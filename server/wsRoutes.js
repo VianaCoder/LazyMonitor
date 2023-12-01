@@ -70,8 +70,8 @@ router.ws("/servers/ping", async (ws, req) => {
           }
         }
         catch(erro) {
-          ws.close(1001, `Problemas ao efetuar testes ICMP: ${erro}`)
-          console.log(`Problemas ao efetuar testes ICMP: ${erro}`)
+          ws.close(1001, `ERROR - Problems in ICMP Tests: ${erro}`)
+          console.log(`ERROR - Problems in ICMP Tests: ${erro}`)
           return
         }
 
@@ -176,13 +176,13 @@ router.ws("/servers/http", async (ws, req) => {
           }
         }
         catch(erro) {
-          ws.close(1001, `Problemas ao efetuar testes HTTP: ${erro}`)
-          console.log(`Problemas ao efetuar testes HTTP: ${erro}`)
+          ws.close(1001, `ERROR - Problems in ICMP Tests: ${erro}`)
+          console.log(`ERROR - Problems in ICMP Tests: ${erro}`)
         }
 
         console.log(statusTests)
 
-        if (statusTests.includes("Problem") & !statusTests.includes("Sucess") & server.lastState != `Offline` ){
+        if (statusTests.includes("Problem") & !statusTests.includes("Success") & server.lastState != `Offline` ){
           server.lastState = `Offline`
           ws.send(JSON.stringify({
             status: 'success',
@@ -192,7 +192,7 @@ router.ws("/servers/http", async (ws, req) => {
             }
           }))
         }
-        else if (statusTests.includes("Sucess") & statusTests.includes("Problem") & server.lastState != `Depracated`) {
+        else if (statusTests.includes("Success") & statusTests.includes("Problem") & server.lastState != `Depracated`) {
           server.lastState = `Depracated`
           ws.send(JSON.stringify({
             status: 'success',
@@ -202,7 +202,7 @@ router.ws("/servers/http", async (ws, req) => {
             }
           }))
         }
-        else if (statusTests.includes("Sucess") & !statusTests.includes("Problem") & !statusTests.includes("Blocked") & server.lastState != `Online`) {
+        else if (statusTests.includes("Success") & !statusTests.includes("Problem") & !statusTests.includes("Blocked") & server.lastState != `Online`) {
           server.lastState = `Online`
           ws.send(JSON.stringify({
             status: 'success',

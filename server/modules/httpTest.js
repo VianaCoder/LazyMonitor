@@ -11,7 +11,7 @@ async function httpTestServers (server) {
 
         axios.get(url, {headers})
             .then(function(response) {
-                resolve("Sucess")
+                resolve("Success")
             })
             .catch(function(error) {
                 if (error.response) {

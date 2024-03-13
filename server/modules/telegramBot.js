@@ -3,22 +3,41 @@ require("dotenv").config();
 
 module.exports = {
 
-    async sendMessage (server) {
+    async reportNewState (server, test) {
 
         const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN
         const CHAT_ID = process.env.CHAT_ID
     
         return new Promise ((resolve, reject) => {
 
-            message = `<b>NewState: ${server.lastState}</b> \n<b>Server:</b> ${server.name}\n<b>Hostname:</b> ${server.hostname}`
+            message = `<b>NewState in ${test}}: ${server.lastState}</b> \n<b>Server:</b> ${server.name}\n<b>Hostname:</b> ${server.hostname}`
     
             axios.get(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, { params: { 'chat_id': CHAT_ID, 'text': message, 'parse_mode': 'HTML'}})
                 .then(function(response) {
-                    resolve("Success")
+                    resolve("Sucess")
                 })
                 .catch(function(error) {
                     console.log(error)
-                    resolve("ERROR - Problem to send telegram notification")
+                    resolve("Send message failed")
+                })
+        })
+    },
+
+    async reportProblem (test , description) {
+        const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN
+        const CHAT_ID = process.env.CHAT_ID
+    
+        return new Promise ((resolve, reject) => {
+
+            message = `<b>Report Problem in ${test}}\n <b>Description:</b> ${description}`
+    
+            axios.get(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, { params: { 'chat_id': CHAT_ID, 'text': message, 'parse_mode': 'HTML'}})
+                .then(function(response) {
+                    resolve("Sucess")
+                })
+                .catch(function(error) {
+                    console.log(error)
+                    resolve("Send message failed")
                 })
         })
     }

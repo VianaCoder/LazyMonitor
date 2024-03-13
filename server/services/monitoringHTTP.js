@@ -9,6 +9,7 @@ async function monitoringHTTP() {
     const clientDB = await DB.connectDB()
     const INTERVAL_FOR_TESTS = process.env.INTERVAL_FOR_TESTS * 1000
     let servers
+    let serverInMonitoring
 
     try {
         servers = await clientDB.query("SELECT * FROM servers")
@@ -24,12 +25,15 @@ async function monitoringHTTP() {
         if(server.monitoringHTTP !== true) {
           console.log(server.monitoringHTTP)
         }
+        else if (server.monitoringHTTP === true) {
+            serverInMonitoring.push(server)
+        }
     }
 
 
-    intervalId = setInterval(async() => {
+    setInterval(async() => {
 
-        for (server of servers) {
+        for (server of serverInMonitoring) {
             statusTests = []
           
             try {
@@ -38,26 +42,26 @@ async function monitoringHTTP() {
               }
             }
             catch(erro) {
-              console.log(`ERROR - Problems in HTTP Tests: ${erro}`)
+                telegramBot.reportProblem('HTTP', `Problem in HTTP Test (${erro})`)
             }
 
             console.log(statusTests)
     
-            if (statusTests.includes("Problem") & !statusTests.includes("Success") & server.lastState != `Offline` ){
+            if (statusTests.includes("Problem") & !statusTests.includes("Sucess") & server.lastState != `Offline` ){
                 server.lastState = `Offline`
-                telegramBot.sendMessage(server)
+                telegramBot.reportNewState(server, "HTTP")
             }
-            else if (statusTests.includes("Success") & statusTests.includes("Problem") & server.lastState != `Depracated`) {
+            else if (statusTests.includes("Sucess") & statusTests.includes("Problem") & server.lastState != `Depracated`) {
                 server.lastState = `Depracated`
-                telegramBot.sendMessage(server)
+                telegramBot.reportNewState(server, "HTTP")
             }
-            else if (statusTests.includes("Success") & !statusTests.includes("Problem") & !statusTests.includes("Blocked") & server.lastState != `Online`) {
+            else if (statusTests.includes("Sucess") & !statusTests.includes("Problem") & !statusTests.includes("Blocked") & server.lastState != `Online`) {
                 server.lastState = `Online`
-                telegramBot.sendMessage(server)
+                telegramBot.reportNewState(server, "HTTP")
             }
             else if (statusTests.includes("Blocked") & server.lastState != `Blocked`) {
                 server.lastState = `Blocked`
-                telegramBot.sendMessage(server)
+                telegramBot.reportNewState(server, "HTTP")
             }
         }
 

@@ -5,6 +5,7 @@ require("dotenv").config();
 const { connectDB, setupDatabase } = require("./modules/dataConnector")
 const expressWs = require("express-ws");
 const monitoringHTTP = require("./services/monitoringHTTP")
+const monitoringPing = require("./services/monitoringPing")
 
 async function main() {
   const PORT = process.env.PORT || 3001;
@@ -28,6 +29,7 @@ async function main() {
   
   //Iniciando monitoramento
   monitoringHTTP()
+  monitoringPing()
 }
 
 main()

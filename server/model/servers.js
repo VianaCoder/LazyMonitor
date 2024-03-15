@@ -6,8 +6,8 @@ const serverSchema = Joi.object({
   monitoringPing: Joi.boolean().required(),
   monitoringHTTP: Joi.boolean().required(),
   monitoringUri: Joi.string(),
-  healthStatusHTTP: Joi.boolean(),
-  healthStatusPing: Joi.boolean()
+  healthStatusHTTP: Joi.string(),
+  healthStatusPing: Joi.string()
 });
 
 module.exports = serverSchema;

@@ -4,6 +4,7 @@ const serverNormalizer = require("../modules/serverNormalizer")
 const serverSchema = require("../model/servers")
 
 const DB = require('../modules/dataConnector')
+const normalizerServerData = require('../modules/serverNormalizer')
 
 
 module.exports = {
@@ -11,32 +12,53 @@ module.exports = {
 async getServers(request, response) {
 
     const clientDB = await DB.connectDB()
+    let servers = []
 
     try {
-        const servers = await clientDB.query("SELECT * FROM servers")
-        return response.json(servers.rows)
+       servers  = await clientDB.query("SELECT * FROM servers")
     } catch(erro) {
         return response.json("ERROR - DataBase Error: " + erro).status(500)
     }
+    servers = servers.rows
+
+    if (servers[0] === undefined) {
+        return response.json("Not found").status(404)
+    }
+
+    servers = servers.reduce((normalizedDataServers, server) => {
+        normalizedDataServers.push(normalizerServerData(server))
+        return normalizedDataServers
+    }, [])
+
+    return response.json(servers)
 },
 
 async getServer(request, response) {
 
     const serverId = request.params.serverId
+    let server
 
     const clientDB = await DB.connectDB()
 
     let query = {
         text: 'SELECT * FROM servers WHERE id = $1',
-        values: [serverId],
+        values: [serverId]
     }
 
     try {
-        const servers = await clientDB.query(query)
-        return response.json(servers.rows)
+        server = await clientDB.query(query)
     } catch(erro) {
         return response.json("ERROR - DataBase Error: " + erro).status(500)
     }
+
+    server = server.rows[0]
+
+    if (server === undefined) {
+        return response.json("Not found").status(404)
+    }
+    server = normalizerServerData(server)
+
+    return response.json(server)
 },
 
 async createServer(request, response) { 
@@ -45,8 +67,8 @@ async createServer(request, response) {
 
     let serverId
     serverData = request.body
-    serverData.healthStatusHTTP = true
-    serverData.healthStatusPing = true
+    serverData.healthStatusHTTP = 'unknown'
+    serverData.healthStatusPing = 'unknown'
 
     console.log(serverData)
 
@@ -75,8 +97,8 @@ async createServer(request, response) {
         console.log(error)
         return response.json("ERROR - Was not possible insert server: " + error).status(500)
     }
-
-    response.status(201).json('Success') 
+    console.log(server)
+    response.status(201).json('Sucess') 
 },
 
 async updateServer(request, response) { 
@@ -104,7 +126,7 @@ async updateServer(request, response) {
     }
 
     //ServerData Normalizer
-    serverData = serverNormalizer.normalizerServerData(serverData)
+    serverData = normalizerServerData(serverData)
 
     console.log(serverData)
     
@@ -134,7 +156,7 @@ async updateServer(request, response) {
   
     try { 
       await clientDB.query(query);
-      response.status(201).json('Success');
+      response.status(201).json('Sucess');
     } catch (error) {
       console.log(error);
       response.status(500).json("ERROR - Was not possible update server: " + error);
@@ -158,7 +180,7 @@ async deleteServer(request, response) {
   
     try { 
       await clientDB.query(query);
-      response.status(200).json('Success');
+      response.status(200).json('Sucess');
     } catch (error) {
       console.log(error);
       response.status(500).json("ERROR - Was not possible delete server: " + error);

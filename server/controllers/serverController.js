@@ -1,10 +1,10 @@
 const { type } = require('os')
 const dataValidate = require("../modules/dataValidate")
-const serverNormalizer = require("../modules/serverNormalizer")
+const normalizerServerData = require('../modules/serverNormalizer')
 const serverSchema = require("../model/servers")
 
 const DB = require('../modules/dataConnector')
-const normalizerServerData = require('../modules/serverNormalizer')
+
 
 
 module.exports = {

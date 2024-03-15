@@ -9,6 +9,8 @@ services:
       - ./package.json:/lazymonitor/package.json
       - ./package-lock.json:/lazymonitor/package-lock.json
     restart: always
+    depends_on:
+      - database
 
   database:
     image: postgres:16.1-alpine

@@ -7,29 +7,25 @@ const expressWs = require("express-ws");
 const monitoringHTTP = require("./services/monitoringHTTP")
 const monitoringPing = require("./services/monitoringPing")
 
-async function main() {
-  const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3001;
+const INTERVAL_FOR_TESTS = process.env.INTERVAL_FOR_TESTS * 1000
 
-  await connectDB();
-  await setupDatabase()
-  
-  const app = express();
-  
-  // Adicionar o serviço HTTP e suas rotas ao App do Express
-  app.use(express.json());
-  app.use(routes);
-  
-  // Adicionar o serviço WebSocket e suas rotas ao App do Express
-  expressWs(app);
-  app.use(wsRoutes);
-  
-  app.listen(PORT, () => {
-    console.log(`Server listening on ${PORT}`);
-  });
-  
-  //Iniciando monitoramento
-  monitoringHTTP()
-  monitoringPing()
+connectDB().then(setupDatabase);
+
+const app = express();
+
+app.use(express.json());
+app.use(routes);
+
+expressWs(app);
+app.use(wsRoutes);
+
+app.listen(PORT, () => {
+  console.log(`Server listening on ${PORT}`);
+});
+
+async function monitor() {
+  Promise.all([monitoringHTTP(), monitoringPing()]);
 }
-
-main()
+  
+monitor()

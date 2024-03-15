@@ -26,28 +26,14 @@ async function connectDB() {
     return client;
 }
 
-async function checkTable(){
+async function setupDatabase() {
+    let query = `SELECT COUNT(*) AS table_count FROM pg_catalog.pg_tables WHERE tablename = 'servers';`
 
-    let query = `SELECT COUNT(*) FROM pg_catalog.pg_tables WHERE tablename = 'servers';`
-    let checkTable
+    const checkTable = await connection.query(query)
 
-    try{
-        checkTable = await connection.query(query)
-        checkTable = checkTable.rows[0].count
-    }
-    catch(error){
-        console.log(`ERROR - ${error}`)
-    }
+    const tableCount = checkTable.rows[0].table_count
 
-    return checkTable
-}
-
-async function setupDatabase(){
-
-    let checkTableResult = await checkTable()
-    console.log(checkTableResult)
-
-    if (checkTableResult == 0) {
+    if (tableCount === '0') {
         query = `CREATE TABLE servers (
             id serial NOT NULL PRIMARY KEY,
             name text COLLATE pg_catalog."default" NOT NULL,
@@ -55,22 +41,16 @@ async function setupDatabase(){
             monitoring_uri text COLLATE pg_catalog."default" NOT NULL,
             monitoring_ping boolean NOT NULL,
             monitoring_http boolean NOT NULL,
-            healthstatus_ping boolean,
-            healthstatus_http boolean,
-            healthstatus_https boolean
-          );`
-    
+            healthstatus_ping text,
+            healthstatus_http text
+        );`
+
+        await connection.query(query)
         console.log("Creating tables")
-        
-        try{
-            await connection.query(query)
-        }
-        catch(error){
-            console.log(`ERROR - ${error}`)
-        }
     }
 
-    return
+    return checkTable
 }
+
 
 module.exports= { connectDB, connection, setupDatabase }

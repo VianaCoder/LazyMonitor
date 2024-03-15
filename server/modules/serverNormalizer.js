@@ -16,4 +16,4 @@ const normalizerServerData = (serverData) => {
 
 }
 
-module.exports = { normalizerServerData };
+module.exports = normalizerServerData;

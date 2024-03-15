@@ -1,4 +1,4 @@
-# LazyMonitor
+# 🚨 LazyMonitor
 
 The LazyMonitor project is a OpenSource HealthChecker to WebApplications to monitoring using HTTP requests and PING tests to notificate the change of application health by Telegram, it's inspired in LazyMoon-MRI available in this [LINK](https://github.com/Mewbi/LazyMoon/tree/master/LM-MRI).
 

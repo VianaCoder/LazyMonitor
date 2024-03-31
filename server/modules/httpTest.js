@@ -7,8 +7,6 @@ async function httpTestServers (server) {
         const url = `https://${server.hostname}${server.monitoringURI}`
         const headers = {'User-Agent': 'LazyMonitor:1.0.0'}
 
-        console.log(`Testing - ${server.name}`)
-
         axios.get(url, {headers})
             .then(function(response) {
                 resolve("Success")

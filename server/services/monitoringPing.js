@@ -2,7 +2,7 @@ const DB = require('../modules/dataConnector.js')
 require("dotenv").config()
 const telegramBot = require("../modules/telegramBot.js")
 const pingTestServers = require("../modules/pingTest.js")
-const normalizerServerData = require("../modules/serverNormalizer")
+const { normalizerServerData, updateServerHealthStatus } = require('../modules/serverUtils')
 
 async function monitoringPing() {
 
@@ -44,31 +44,13 @@ async function monitoringPing() {
     }
 
     if (statusPingTests.includes(false) & !statusPingTests.includes(true) & server.healthStatusPing != `Down` ){
-      try {
-        telegramBot.reportNewState(server, "PING", `Blocked`)
-        await clientDB.query({text: "UPDATE servers SET healthstatus_ping = $1 WHERE id = $2", values: [`Offline`, server.id]})
-      }
-      catch(erro) {
-        console.log(erro)
-      }
+      await updateServerHealthStatus(server, "PING", "Blocked");
     }
     else if (statusPingTests.includes(false) & statusPingTests.includes(true) & server.healthStatusPing != `Depracated`) {
-      try {
-        telegramBot.reportNewState(server, "PING", `Depracated`)
-        await clientDB.query({text: "UPDATE servers SET healthstatus_ping = $1 WHERE id = $2", values: [`Depracated`, server.id]})
-      }
-      catch(erro) {
-        console.log(erro)
-      }
+      await updateServerHealthStatus(server, "PING", "Depracated");
     }
-    else if (statusPingTests.includes(true) & !statusPingTests.includes(false) & server.healthStatusPing != `Up`) {
-      try{
-        telegramBot.reportNewState(server, "PING", `Online`)
-        await clientDB.query({text: "UPDATE servers SET healthstatus_ping = $1 WHERE id = $2", values: [`Online`, server.id]})
-      }
-      catch(erro){
-        console.log(erro)
-      }
+    else if (statusPingTests.includes(true) & !statusPingTests.includes(false) & server.healthStatusPing != `Online`) {
+      await updateServerHealthStatus(server, "PING", "Online");
     }
 
   };

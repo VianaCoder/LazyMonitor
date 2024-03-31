@@ -1,10 +1,9 @@
 const { type } = require('os')
-const dataValidate = require("../modules/dataValidate")
-const serverNormalizer = require("../modules/serverNormalizer")
+const { normalizerServerData, validateHostnameAddress } = require('../modules/serverUtils')
 const serverSchema = require("../model/servers")
 
 const DB = require('../modules/dataConnector')
-const normalizerServerData = require('../modules/serverNormalizer')
+
 
 
 module.exports = {
@@ -70,10 +69,8 @@ async createServer(request, response) {
     serverData.healthStatusHTTP = 'unknown'
     serverData.healthStatusPing = 'unknown'
 
-    console.log(serverData)
 
-
-    if ( dataValidate.validateHostnameAddress(serverData.hostname) === Error) {
+    if ( validateHostnameAddress(serverData.hostname) === Error) {
         return response.status(400).json("ERROR - Hostname Invalited")
     }
 
@@ -97,7 +94,6 @@ async createServer(request, response) {
         console.log(error)
         return response.json("ERROR - Was not possible insert server: " + error).status(500)
     }
-    console.log(server)
     response.status(201).json('Sucess') 
 },
 
@@ -125,7 +121,6 @@ async updateServer(request, response) {
         return response.json("ERROR - DataBase Error: " + erro).status(500)
     }
 
-    //ServerData Normalizer
     serverData = normalizerServerData(serverData)
 
     console.log(serverData)
@@ -136,7 +131,7 @@ async updateServer(request, response) {
         }
     }
   
-    if ( dataValidate.validateHostnameAddress(serverData.hostname) === Error) {
+    if ( validateHostnameAddress(serverData.hostname) === Error) {
         return response.status(400).json("ERROR - IP Invalited")
     }
 
@@ -146,8 +141,6 @@ async updateServer(request, response) {
     catch (error) {
         return response.status(400).json("ERROR - Data Invalited: " + error)
     }
-
-    console.log(serverData)
   
     query = {
       text: 'UPDATE servers SET name = $1, hostname = $2, monitoring_ping = $3, monitoring_http = $4, monitoring_uri = $5 WHERE id = $6',

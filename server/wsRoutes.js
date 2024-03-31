@@ -1,24 +1,24 @@
 const express = require("express");
 const expressWs = require("express-ws");
 const router = express.Router();
-
 const DB = require('./modules/dataConnector')
-const pingTestServers = require('./modules/pingTest');
-const httpTestServers = require("./modules/httpTest");
-const serverNormalizer = require("./modules/serverNormalizer")
+const { normalizerServerData } = require('./modules/serverUtils')
+const ServerMonitoringList = require("./modules/serverList.js")
 
 
 expressWs(router);
 
 router.ws("/servers/ping", async (ws, req) => {
 
+  let intervalId = undefined;
+  let intervalCreated = false;
+
   ws.on("message", async (message) => {
 
     const data = JSON.parse(message)
-
     const clientDB = await DB.connectDB()
-
     const serversList = data.serversList
+    const sharedServerMonitoringList = ServerMonitoringList.getInstance()
   
   
     for ( id of serversList) {
@@ -48,71 +48,53 @@ router.ws("/servers/ping", async (ws, req) => {
 
     for(server of servers) {
 
-      server = serverNormalizer.normalizerServerData(server)
+      server = normalizerServerData(server)
 
-      console.log(server) 
       if(server.monitoringPing !== true) {
-        console.log(server.monitoringPing)
+        ws.send(`ERROR - Server: ${server.id} - MonitoringPing is not authorized`)
         ws.close(1001, `ERROR - Server: ${server.id} - MonitoringPing is not authorized`)
         return
       }
     }
 
-    intervalId = setInterval(async() => {
+    let serverStatusHistory = {}
 
-      for(server of servers) {
-  
-        statusTests = []
-          
-        try {
-          for(let i = 1; i <= 3; i++){
-            statusTests.push(await pingTestServers(server.hostname))
+    if (!intervalCreated) {
+      intervalId = setInterval(async() => {
+        for(server of servers) {
+
+          serverInMonitoring = sharedServerMonitoringList.getServer(server.id)
+
+          if (!serverInMonitoring){
+            continue
           }
-        }
-        catch(erro) {
-          ws.close(1001, `ERROR - Problems in ICMP Tests: ${erro}`)
-          console.log(`ERROR - Problems in ICMP Tests: ${erro}`)
-          return
-        }
 
-        if (statusTests.includes(false) & !statusTests.includes(true) & server.lastState != `Offline` ){
-          server.lastState = `Offline`
-          ws.send(JSON.stringify({
-            status: 'success',
-            data: {
-              server: `${server.id}`,
-              statusServer: `Offline`
-            }
-          }))
-        }
-        else if (statusTests.includes(false) & statusTests.includes(true) & server.lastState != `Depracated`) {
-          server.lastState = `Depracated`
-          ws.send(JSON.stringify({
-            status: 'success',
-            data: {
-              server: `${server.id}`,
-              statusServer: `Depracated`
-            }
-          }))
-        }
-        else if (statusTests.includes(true) & !statusTests.includes(false) & server.lastState != `Online`) {
-          server.lastState = `Online`
-          ws.send(JSON.stringify({
-            status: 'success',
-            data: {
-              server: `${server.id}`,
-              statusServer: `Online`
-            }
-          }))
-        }
-  
-      };
-    }, 1000);
+          if (!serverStatusHistory[server.id]) {
+            serverStatusHistory[server.id] = server;
+          }
+
+
+          if (serverStatusHistory[server.id].healthStatusPing != serverInMonitoring.healthStatusPing) {
+            serverStatusHistory[server.id].healthStatusPing = serverInMonitoring.healthStatusPing
+            ws.send(JSON.stringify({
+              status: 'success',
+              data: {
+                server: `${server.id}`,
+                statusServer: serverInMonitoring.healthStatusPing
+              }
+            }))
+          }
+    
+        };
+      }, 5000)
+    };
 
   },
   
   ws.on("close", () => {
-    clearInterval(intervalId);
+    if (intervalCreated) {;
+      clearInterval(intervalId);
+    }
   })
   
   );
@@ -120,13 +102,16 @@ router.ws("/servers/ping", async (ws, req) => {
 
 router.ws("/servers/http", async (ws, req) => {
 
+  let intervalId = undefined;
+  let intervalCreated = false;
+  let serverStatusHistory = {};
+
   ws.on("message", async (message) => {
 
     const data = JSON.parse(message)
-
     const clientDB = await DB.connectDB()
-
     const serversList = data.serversList
+    const sharedServerMonitoringList = ServerMonitoringList.getInstance()
   
   
     for ( id of serversList) {
@@ -154,82 +139,50 @@ router.ws("/servers/http", async (ws, req) => {
 
     for(server of servers) {
 
-      server = serverNormalizer.normalizerServerData(server)
+        server = normalizerServerData(server)
 
-      console.log(server) 
-      if(server.monitoringPing !== true) {
-        console.log(server.monitoringHTTP)
-        ws.close(1001, `ERROR - Server: ${server.id} - MonitoringHTTP is not authorized`)
-        return
+        if(server.monitoringHTTP !== true) {
+          ws.close(1001, `ERROR - Server: ${server.id} - MonitoringHTTP is not authorized`)
+          return
+        }
       }
-    }
 
-    intervalId = setInterval(async() => {
+      let serverStatusHistory = {}
 
-      for(server of servers) {
-  
-        statusTests = []
-          
-        try {
-          for(let i = 0; i <= 3; i++){
-            statusTests.push(await httpTestServers(server))
-          }
-        }
-        catch(erro) {
-          ws.close(1001, `ERROR - Problems in ICMP Tests: ${erro}`)
-          console.log(`ERROR - Problems in ICMP Tests: ${erro}`)
-        }
+      if (!intervalCreated) {
+        intervalId = setInterval(async() => {
+          for(server of servers) {
+            
+            serverInMonitoring = sharedServerMonitoringList.getServer(server.id)
 
-        console.log(statusTests)
-
-        if (statusTests.includes("Problem") & !statusTests.includes("Success") & server.lastState != `Offline` ){
-          server.lastState = `Offline`
-          ws.send(JSON.stringify({
-            status: 'success',
-            data: {
-              server: `${server.id}`,
-              statusServer: `Offline`
+            if (!serverInMonitoring) {
+              continue
             }
-          }))
-        }
-        else if (statusTests.includes("Success") & statusTests.includes("Problem") & server.lastState != `Depracated`) {
-          server.lastState = `Depracated`
-          ws.send(JSON.stringify({
-            status: 'success',
-            data: {
-              server: `${server.id}`,
-              statusServer: `Depracated`
+            
+            if (!serverStatusHistory[server.id]) {
+              serverStatusHistory[server.id] = server;
             }
-          }))
-        }
-        else if (statusTests.includes("Success") & !statusTests.includes("Problem") & !statusTests.includes("Blocked") & server.lastState != `Online`) {
-          server.lastState = `Online`
-          ws.send(JSON.stringify({
-            status: 'success',
-            data: {
-              server: `${server.id}`,
-              statusServer: `Online`
-            }
-          }))
-        }
-        else if (statusTests.includes("Blocked") & server.lastState != `Blocked`) {
-          server.lastState = `Blocked`
-          ws.send(JSON.stringify({
-            status: 'success',
-            data: {
-              server: `${server.id}`,
-              statusServer: `Blocked`
-            }
-          }))
-        }
-  
-      };
-    }, 1000)
 
+            if (serverStatusHistory[server.id].healthStatusHTTP !== serverInMonitoring.healthStatusHTTP) {
+              serverStatusHistory[server.id].healthStatusHTTP = serverInMonitoring.healthStatusHTTP
+              ws.send(JSON.stringify({
+                status: 'success',
+                data: {
+                  server: `${server.id}`,
+                  statusServer: serverInMonitoring.healthStatusHTTP
+                }
+              }))
+            }
+      
+          };
+        }, 5000)
+      }
   }),
 
   ws.on("close", () => {
-    clearInterval(intervalId);
+    if (intervalCreated) {;
+      clearInterval(intervalId);
+    }
   })
 
 });

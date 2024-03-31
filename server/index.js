@@ -8,7 +8,6 @@ const monitoringHTTP = require("./services/monitoringHTTP")
 const monitoringPing = require("./services/monitoringPing")
 
 const PORT = process.env.PORT || 3001;
-const INTERVAL_FOR_TESTS = process.env.INTERVAL_FOR_TESTS * 1000
 
 connectDB().then(setupDatabase);
 

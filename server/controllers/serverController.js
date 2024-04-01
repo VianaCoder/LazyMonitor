@@ -121,6 +121,10 @@ async updateServer(request, response) {
         return response.json("ERROR - DataBase Error: " + erro).status(500)
     }
 
+    if (serverData === undefined) {
+        return response.json("Not found").status(404)
+    }
+
     serverData = normalizerServerData(serverData)
 
     console.log(serverData)

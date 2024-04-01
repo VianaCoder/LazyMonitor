@@ -1,8 +1,8 @@
 const DB = require('../modules/dataConnector.js')
 require("dotenv").config()
-const telegramBot = require("../modules/telegramBot.js")
 const httpTestServers = require("../modules/httpTest.js")
-const normalizerServerData = require("../modules/serverNormalizer")
+const { normalizerServerData, updateServerHealthStatus } = require('../modules/serverUtils')
+
 
 async function monitoringHTTP() {
 
@@ -12,6 +12,8 @@ async function monitoringHTTP() {
     let servers
 
     setInterval(async() => {
+
+        console.log("Testando")
 
         try {
             servers = await clientDB.query("SELECT * FROM servers")
@@ -41,42 +43,20 @@ async function monitoringHTTP() {
             catch(erro) {
                 telegramBot.reportProblem('HTTP', `Problem in HTTP Test (${erro})`)
             }
+
+            console.log(statusHTTPTests)
     
-            if (statusHTTPTests.includes("Problem") & !statusHTTPTests.includes("Sucess") & server.healthStatusHTTP != `Offline` ){
-                try {
-                telegramBot.reportNewState(server, "HTTP", `Offline`)
-                await clientDB.query({text: "UPDATE servers SET healthstatus_http = $1 WHERE id = $2", values: [`Offline`, server.id]})
-                }
-                catch(erro) {
-                    console.log(erro)
-                }
+            if (statusHTTPTests.includes("Problem") && !statusHTTPTests.includes("Success") && !statusHTTPTests.includes("Blocked") && server.healthStatusHTTP != `Offline` ){
+                await updateServerHealthStatus(server, "HTTP", "Offline");
             }
-            else if (statusHTTPTests.includes("Sucess") & statusHTTPTests.includes("Problem") & server.healthStatusHTTP != `Depracated`) {
-                try {
-                telegramBot.reportNewState(server, "HTTP", `Depracated`)
-                await clientDB.query({text: "UPDATE servers SET healthstatus_http = $1 WHERE id = $2", values: [`Depracated`, server.id]})
-                }
-                catch(erro) {
-                    console.log(erro)
-                }
+            else if (statusHTTPTests.includes("Success") && statusHTTPTests.includes("Problem") && !statusHTTPTests.includes("Blocked") && server.healthStatusHTTP != `Depracated`) {
+                await updateServerHealthStatus(server, "HTTP", "Deprecated");
             }
-            else if (statusHTTPTests.includes("Sucess") & !statusHTTPTests.includes("Problem") & !statusHTTPTests.includes("Blocked") & server.healthStatusHTTP != `Online`) {
-                try {
-                telegramBot.reportNewState(server, "HTTP", `Online`)
-                await clientDB.query({text: "UPDATE servers SET healthstatus_http = $1 WHERE id = $2", values: [`Online`, server.id]})
-                }
-                catch(erro) {
-                    console.log(erro)
-                }
+            else if (statusHTTPTests.includes("Success") && !statusHTTPTests.includes("Problem") && !statusHTTPTests.includes("Blocked") && server.healthStatusHTTP != `Online`) {
+                await updateServerHealthStatus(server, "HTTP", "Online");
             }
-            else if (statusHTTPTests.includes("Blocked") & server.healthStatusHTTP != `Blocked`) {
-                try {
-                telegramBot.reportNewState(server, "HTTP", `Blocked`)
-                await clientDB.query({text: "UPDATE servers SET healthstatus_http = $1 WHERE id = $2", values: [`Blocked`, server.id]})
-                }
-                catch(erro) {
-                    console.log(erro)
-                }
+            else if (statusHTTPTests.includes("Blocked") && server.healthStatusHTTP != `Blocked`) {
+                await updateServerHealthStatus(server, "HTTP", "Blocked");
             }
         }
     }, INTERVAL_FOR_TESTS)

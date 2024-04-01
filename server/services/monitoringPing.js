@@ -44,7 +44,7 @@ async function monitoringPing() {
     }
 
     if (statusPingTests.includes(false) & !statusPingTests.includes(true) & server.healthStatusPing != `Down` ){
-      await updateServerHealthStatus(server, "PING", "Blocked");
+      await updateServerHealthStatus(server, "PING", "Down");
     }
     else if (statusPingTests.includes(false) & statusPingTests.includes(true) & server.healthStatusPing != `Depracated`) {
       await updateServerHealthStatus(server, "PING", "Depracated");
